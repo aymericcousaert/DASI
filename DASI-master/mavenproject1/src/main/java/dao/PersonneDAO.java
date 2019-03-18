@@ -1,0 +1,87 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package dao;
+
+import java.sql.Time;
+import java.util.Date;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import metier.modele.Client;
+import metier.modele.Employe;
+import metier.modele.Personne;
+import static util.DebugLogger.log;
+
+/**
+ *
+ * @author acousaert
+ */
+public class PersonneDAO {
+    
+    public void ajoutePersonne(Personne p){
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        try {
+            em.persist(p);
+        } catch (Exception e) {
+            log(e.getMessage());
+        }   
+        
+    }
+    
+    public boolean verifiePersonne(Personne p) {
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        Boolean existePas;
+        try {
+            String jpql = "select c from Client c where c.mail =:mail";
+            Query query = em.createQuery(jpql);
+            query.setParameter("mail", p.getMail());
+            Personne pers = (Personne) query.getSingleResult();
+            existePas = false;
+        } catch (Exception e) {
+            log(e.getMessage());
+            existePas = true;
+        }
+        return existePas;
+        
+    }
+    
+    public Personne connectePersonne(String mail, String mdp) {
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        Boolean userEtMdpCorrect;
+        Personne pers;
+        try {
+            String jpql = "select p from Personne p where p.mail =:mail and p.mdp =:mdp";
+            Query query = em.createQuery(jpql);
+            query.setParameter("mail", mail);
+            query.setParameter("mdp", mdp);
+            pers = (Personne) query.getSingleResult();
+            userEtMdpCorrect = true;
+            log("\n Connexion pour "+ pers.getPrenom() + " " + pers.getNom() + " réussie.\n");
+        } catch (Exception e) {
+            log("\n Connexion échouée \n");
+            log(e.getMessage());
+            userEtMdpCorrect = false;
+            pers = null;
+        }
+        return pers;
+    }
+
+    public List<Employe> trouveDispoEmploye(Time heureDebut) {
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        List<Employe> employesDispo;
+        try {
+        String jpql = "select e from Employe e where e.debutTravail < :heureDebut and e.finTravail > :heureDebut and e.estDispo = 0";
+        Query query = em.createQuery(jpql);
+        query.setParameter("heureDebut", heureDebut);
+        employesDispo = (List<Employe>) query.getResultList();
+        } catch (Exception ex){
+            employesDispo = null;
+            log(ex.getMessage());
+        }
+        return employesDispo;
+    }
+    
+}
