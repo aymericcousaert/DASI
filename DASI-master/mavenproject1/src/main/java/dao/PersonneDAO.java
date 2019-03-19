@@ -6,11 +6,9 @@
 package dao;
 
 import java.sql.Time;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import metier.modele.Client;
 import metier.modele.Employe;
 import metier.modele.Personne;
 import static util.DebugLogger.log;
@@ -29,6 +27,18 @@ public class PersonneDAO {
             log(e.getMessage());
         }   
         
+    }
+    
+    public Personne mergePersonne(Personne p){
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        Personne newP;
+        try {
+            newP = em.merge(p);
+        } catch (Exception e) {
+            log(e.getMessage());
+            newP = p;
+        }   
+        return newP;
     }
     
     public boolean verifiePersonne(Personne p) {
@@ -73,7 +83,7 @@ public class PersonneDAO {
         EntityManager em = JpaUtil.obtenirEntityManager();
         List<Employe> employesDispo;
         try {
-        String jpql = "select e from Employe e where e.debutTravail < :heureDebut and e.finTravail > :heureDebut and e.estDispo = 0";
+        String jpql = "select e from Employe e where e.debutTravail < :heureDebut and e.finTravail > :heureDebut and e.estDispo = 1";
         Query query = em.createQuery(jpql);
         query.setParameter("heureDebut", heureDebut);
         employesDispo = (List<Employe>) query.getResultList();

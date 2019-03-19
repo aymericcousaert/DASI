@@ -20,7 +20,7 @@ public class InterventionDAO {
         try {
             em.persist(i);
         } catch (Exception e) {
-            log(e.getMessage());
+            log("Invervention non ajoutée\n");
         }   
         
     }

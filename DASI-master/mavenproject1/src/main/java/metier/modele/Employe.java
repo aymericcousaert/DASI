@@ -30,12 +30,16 @@ public class Employe extends Personne implements Serializable {
         super(civilite, nom, prenom, dateNaissance, adresse, numTel, mail, mdp);
         this.debutTravail = debutTravail;
         this.finTravail = finTravail;
-        this.estDispo = false;
+        this.estDispo = true;
     }
 
-   
+    public Intervention getIntervention() {
+        return intervention;
+    }
 
-  
+    public void setIntervention(Intervention intervention) {
+        this.intervention = intervention;
+    }
 
     public Employe() {
         super();

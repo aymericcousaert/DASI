@@ -7,6 +7,7 @@ package metier.service;
 
 import com.google.maps.model.LatLng;
 import com.google.maps.model.TravelMode;
+import dao.InterventionDAO;
 import dao.JpaUtil;
 import dao.PersonneDAO;
 import java.sql.Time;
@@ -17,13 +18,14 @@ import metier.modele.Animal;
 import metier.modele.Client;
 import metier.modele.Employe;
 import metier.modele.Incident;
-import metier.modele.Intervention;
 import metier.modele.Livraison;
 import metier.modele.Personne;
 import static util.DebugLogger.log;
 import static util.GeoTest.getLatLng;
 import static util.GeoTest.getTripDurationOrDistance;
+import static util.GeoTest.getTripDurationByBicycleInMinute;
 import static util.Message.envoyerMail;
+import static util.Message.envoyerNotification;
 
 /**
  *
@@ -103,7 +105,6 @@ public class Service {
     }
     
     private List<Employe> trouverDispoEmploye() {
-        JpaUtil.creerEntityManager();
         PersonneDAO pdao = new PersonneDAO();
         List<Employe> employesDispo;
         Time heureDebut = java.sql.Time.valueOf(java.time.LocalTime.now());
@@ -113,7 +114,6 @@ public class Service {
             log(ex.getMessage());
             employesDispo = null;
         }
-        JpaUtil.fermerEntityManager();
         return employesDispo;
     }
     
@@ -135,26 +135,44 @@ public class Service {
     public void ajouterIntervention(Client c, String description, String type, String nom) {
         JpaUtil.creerEntityManager();
         JpaUtil.ouvrirTransaction();
-        List<Employe> employesDispo = trouverDispoEmploye();
-        if(employesDispo.isEmpty()){
-            System.out.println("Intervention rejetée : Aucun employé disponible");
-        } else {
-            
-            switch(type){
-            case "Incident" : 
-                Incident i = new Incident(nom,description,c);
-                break;
-            case "Animal" :
-                Animal a = new Animal(nom,description,c);
-                break;
-            case "Livraison" : 
-                Livraison l = new Livraison(nom,description,c);
-                break;
-            
+        try {
+            List<Employe> employesDispo = trouverDispoEmploye();
+            if(employesDispo.isEmpty()){
+                System.out.println("Intervention rejetée : Aucun employé disponible");
+            } else {
+                Employe plusProche = trouverPlusProcheEmploye(employesDispo,c);
+                InterventionDAO idao = new InterventionDAO();
+                PersonneDAO pdao = new PersonneDAO();
+                switch(type){
+                case "Incident" : 
+                    Incident i = new Incident(nom,description,c);
+                    idao.ajouteIntervention(i);
+                    envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + i.getHeureDebut() + " pour " + c.getPrenom() + " "
+                        + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+                    break;
+                case "Animal" :
+                    Animal a = new Animal(nom,description,c);
+                    idao.ajouteIntervention(a);
+                    envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + a.getHeureDebut() + " pour " + c.getPrenom() + " "
+                        + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+                    break;
+                case "Livraison" : 
+                    Livraison l = new Livraison(nom,description,c);
+                    idao.ajouteIntervention(l);
+                    envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + l.getHeureDebut() + " pour " + c.getPrenom() + " "
+                        + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute( getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+                    break;
+                }
+                
+            }
+            JpaUtil.validerTransaction();
+        } catch (RollbackException ex){
+                log(ex.getMessage());
+                JpaUtil.annulerTransaction();
         }
             
-        }
     }
+    
     
     
     
