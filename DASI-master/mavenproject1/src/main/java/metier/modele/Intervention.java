@@ -27,11 +27,14 @@ import javax.persistence.TemporalType;
 @Entity
 @Inheritance (strategy = InheritanceType.JOINED)
 public class Intervention implements Serializable {
+
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String statut;
     private String description;
+    private String commentaire;
     @ManyToOne
     private Client client;
     @OneToOne
@@ -44,15 +47,38 @@ public class Intervention implements Serializable {
     public Intervention() {
     }
 
-    public Intervention(String description, Client client) {
+    public Intervention(String description, Client client, Employe employe) {
         this.description = description;
         this.client = client;
         this.statut = "en cours";
+        this.employe =  employe;
         heureDebut = new Date(); // a tester
         
     }
 
-    
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public String getCommentaire() {
+        return commentaire;
+    }
+
+    public void setCommentaire(String commentaire) {
+        this.commentaire = commentaire;
+    }
+
+    public Employe getEmploye() {
+        return employe;
+    }
+
+    public void setEmploye(Employe employe) {
+        this.employe = employe;
+    }
 
     public String getDescription() {
         return description;

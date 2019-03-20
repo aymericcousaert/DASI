@@ -18,6 +18,7 @@ import metier.modele.Animal;
 import metier.modele.Client;
 import metier.modele.Employe;
 import metier.modele.Incident;
+import metier.modele.Intervention;
 import metier.modele.Livraison;
 import metier.modele.Personne;
 import static util.DebugLogger.log;
@@ -142,36 +143,41 @@ public class Service {
             } else {
                 Employe plusProche = trouverPlusProcheEmploye(employesDispo,c);
                 InterventionDAO idao = new InterventionDAO();
-                PersonneDAO pdao = new PersonneDAO();
+                Intervention inter = null;
                 switch(type){
                 case "Incident" : 
-                    Incident i = new Incident(nom,description,c);
-                    idao.ajouteIntervention(i);
-                    envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + i.getHeureDebut() + " pour " + c.getPrenom() + " "
-                        + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+                    inter = new Incident(nom,description,c,plusProche);
                     break;
                 case "Animal" :
-                    Animal a = new Animal(nom,description,c);
-                    idao.ajouteIntervention(a);
-                    envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + a.getHeureDebut() + " pour " + c.getPrenom() + " "
-                        + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+                    inter = new Animal(nom,description,c,plusProche);
                     break;
                 case "Livraison" : 
-                    Livraison l = new Livraison(nom,description,c);
-                    idao.ajouteIntervention(l);
-                    envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + l.getHeureDebut() + " pour " + c.getPrenom() + " "
-                        + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute( getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+                    inter = new Livraison(nom,description,c,plusProche);
                     break;
                 }
-                
+                plusProche.setIntervention(inter);
+                idao.ajouteIntervention(inter);
+                envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + inter.getHeureDebut() + " pour " + c.getPrenom() + " "
+                    + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
             }
             JpaUtil.validerTransaction();
         } catch (RollbackException ex){
                 log(ex.getMessage());
                 JpaUtil.annulerTransaction();
         }
-            
+        JpaUtil.fermerEntityManager();
     }
+    
+    public void cloturerIntervention(Employe e,String statut, String commentaire, Date date){
+        JpaUtil.creerEntityManager();
+        JpaUtil.ouvrirTransaction();
+        /*e.setPrenom("test");
+        PersonneDAO pdao = new PersonneDAO();
+        pdao.mergePersonne(e);*/
+        JpaUtil.validerTransaction();
+        JpaUtil.fermerEntityManager();
+    }
+    
     
     
     

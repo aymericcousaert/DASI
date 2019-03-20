@@ -20,8 +20,8 @@ public class Animal extends Intervention {
     public Animal() {
     }
 
-    public Animal(String animal, String description, Client client) {
-        super(description, client);
+    public Animal(String animal, String description, Client client, Employe employe) {
+        super(description, client, employe);
         this.animal = animal;
     }
 

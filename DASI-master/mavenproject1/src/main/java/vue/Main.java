@@ -45,6 +45,8 @@ public class Main {
         Client Paul = (Client) s.connecterPersonne("paul.toutcourt@gmail.com", "azerty");
         //log(s.trouverPlusProcheEmploye(s.trouverDispoEmploye(),Paul).getPrenom());
         s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
+        //log(Jacques.getIntervention().getCommentaire());
+        //s.cloturerIntervention(Jacques,"succes","c t dur",d);
         
     }
 

@@ -19,8 +19,8 @@ public class Livraison extends Intervention {
     public Livraison() {
     }
 
-    public Livraison(String livraison, String description, Client client) {
-        super(description, client);
+    public Livraison(String livraison, String description, Client client, Employe employe) {
+        super(description, client, employe);
         this.livraison = livraison;
     }
 

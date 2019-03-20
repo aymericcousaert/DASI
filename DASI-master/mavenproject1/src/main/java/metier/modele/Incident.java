@@ -20,8 +20,8 @@ public class Incident extends Intervention {
     public Incident() {
     }
 
-    public Incident(String nature, String description, Client client) {
-        super(description, client);
+    public Incident(String nature, String description, Client client, Employe employe) {
+        super(description, client,employe);
         this.nature = nature;
     }
 
