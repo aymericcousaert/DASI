@@ -16,7 +16,7 @@ import static util.DebugLogger.log;
 
 /**
  *
- * @author acousaert
+ * @author acousaert mguilhin
  */
 public class InterventionDAO {
     
@@ -66,7 +66,7 @@ public class InterventionDAO {
                     query.setParameter("emp",  e);
                 }
                 else {
-                    String jpql = "select i from Incident i";
+                    String jpql = "select i from Livraison i";
                     query = em.createQuery(jpql); 
                 }
                 InterRecherchees.addAll((List<Intervention>) query.getResultList());

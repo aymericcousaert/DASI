@@ -10,19 +10,21 @@ import java.sql.Time;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
-
+import javax.persistence.Version;
 /**
  *
- * @author acousaert
+ * @author acousaert mguilhin
  */
 @Entity
-
 public class Employe extends Personne implements Serializable {
 
+    @Version
+    private long version;
     
     private Time debutTravail;
     private Time finTravail;
     private Boolean estDispo;
+    
     @OneToOne
     private Intervention intervention;
 
@@ -53,8 +55,6 @@ public class Employe extends Personne implements Serializable {
         this.estDispo = estDispo;
     }
 
- 
-
     public Time getDebutTravail() {
         return debutTravail;
     }
@@ -70,6 +70,4 @@ public class Employe extends Personne implements Serializable {
     public void setFinTravail(Time finTravail) {
         this.finTravail = finTravail;
     }
-    
-    
 }

@@ -8,6 +8,7 @@ package dao;
 import java.sql.Time;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import metier.modele.Employe;
 import metier.modele.Personne;
@@ -73,7 +74,6 @@ public class PersonneDAO {
     
     public Personne connectePersonne(String mail, String mdp) {
         EntityManager em = JpaUtil.obtenirEntityManager();
-        Boolean userEtMdpCorrect;
         Personne pers;
         try {
             String jpql = "select p from Personne p where p.mail =:mail and p.mdp =:mdp";
@@ -81,12 +81,10 @@ public class PersonneDAO {
             query.setParameter("mail", mail);
             query.setParameter("mdp", mdp);
             pers = (Personne) query.getSingleResult();
-            userEtMdpCorrect = true;
             log("\n Connexion pour "+ pers.getPrenom() + " " + pers.getNom() + " réussie.\n");
         } catch (Exception e) {
             log("\n Connexion échouée \n");
             log(e.getMessage());
-            userEtMdpCorrect = false;
             pers = null;
         }
         return pers;
@@ -106,6 +104,18 @@ public class PersonneDAO {
         }
         return employesDispo;
     }
+    
+    public void lock(Employe e){
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        try {
+            em.lock(e, LockModeType.OPTIMISTIC);
+        } catch (Exception ex){
+            log("catch");
+            log(ex.getMessage());
+        }
+        
+    }
+
     
     
 }

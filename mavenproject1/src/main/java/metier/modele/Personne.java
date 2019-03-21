@@ -24,14 +24,18 @@ import javax.persistence.TemporalType;
 @Entity
 @Inheritance (strategy = InheritanceType.JOINED)
 public class Personne implements Serializable  {  
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    
     private String civilite;
     private String nom;
     private String prenom;
+    
     @Temporal(TemporalType.DATE)
     private Date dateNaissance;
+    
     private String adresse;
     private String numTel;
     private String mail;

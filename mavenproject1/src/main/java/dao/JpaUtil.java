@@ -69,7 +69,7 @@ public class JpaUtil {
      * (ActionServlet) [projet Web Application].</strong>
      */
     public static synchronized void init() {
-        log("Initialisation de la factory de contexte de persistance");
+        //log("Initialisation de la factory de contexte de persistance");
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
         }
@@ -83,7 +83,7 @@ public class JpaUtil {
      * (ActionServlet) [projet Web Application].</strong>
      */
     public static synchronized void destroy() {
-        log("Libération de la factory de contexte de persistance");
+        //log("Libération de la factory de contexte de persistance");
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
             entityManagerFactory = null;
@@ -95,7 +95,7 @@ public class JpaUtil {
      * <br><strong>À utiliser uniquement au niveau Service.</strong>
      */
     public static void creerEntityManager() {
-        log("Création du contexte de persistance");
+        //log("Création du contexte de persistance");
         threadLocalEntityManager.set(entityManagerFactory.createEntityManager());
     }
 
@@ -104,7 +104,7 @@ public class JpaUtil {
      * <br><strong>À utiliser uniquement au niveau Service.</strong>
      */
     public static void fermerEntityManager() {
-        log("Fermeture du contexte de persistance");
+        //log("Fermeture du contexte de persistance");
         EntityManager em = threadLocalEntityManager.get();
         em.close();
         threadLocalEntityManager.set(null);
@@ -115,12 +115,12 @@ public class JpaUtil {
      * <br><strong>À utiliser uniquement au niveau Service.</strong>
      */
     public static void ouvrirTransaction() {
-        log("Ouverture de la transaction (begin)");
+        //log("Ouverture de la transaction (begin)");
         try {
             EntityManager em = threadLocalEntityManager.get();
             em.getTransaction().begin();
         } catch (Exception ex) {
-            log("Erreur lors de l'ouverture de la transaction");
+            //log("Erreur lors de l'ouverture de la transaction");
             throw ex;
         }
     }
@@ -132,12 +132,12 @@ public class JpaUtil {
      * @exception RollbackException lorsque le <em>commit</em> n'a pas réussi.
      */
     public static void validerTransaction() throws RollbackException {
-        log("Validation de la transaction (commit)");
+        //log("Validation de la transaction (commit)");
         try {
             EntityManager em = threadLocalEntityManager.get();
             em.getTransaction().commit();
         } catch (Exception ex) {
-            log("Erreur lors de la validation (commit) de la transaction");
+            //log("Erreur lors de la validation (commit) de la transaction");
             throw ex;
         }
     }
@@ -150,16 +150,16 @@ public class JpaUtil {
      */
     public static void annulerTransaction() {
         try {
-            log("Annulation de la transaction (rollback)");
+            //log("Annulation de la transaction (rollback)");
 
             EntityManager em = threadLocalEntityManager.get();
             if (em.getTransaction().isActive()) {
-                log("Annulation effective de la transaction (rollback d'une transaction active)");
+                //log("Annulation effective de la transaction (rollback d'une transaction active)");
                 em.getTransaction().rollback();
             }
 
         } catch (Exception ex) {
-            log("Erreur lors de l'annulation (rollback) de la transaction");
+            //log("Erreur lors de l'annulation (rollback) de la transaction");
             throw ex;
         }
     }
@@ -171,7 +171,7 @@ public class JpaUtil {
      * @return instance de Entity Manager
      */
     protected static EntityManager obtenirEntityManager() {
-        log("Obtention du contexte de persistance");
+        //log("Obtention du contexte de persistance");
         return threadLocalEntityManager.get();
     }
 }

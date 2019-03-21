@@ -36,12 +36,7 @@ import static util.Message.envoyerNotification;
  */
 public class Service {
     
-    private void calculCoord(Client c) {
-        LatLng coords;
-        coords = getLatLng(c.getAdresse());
-        c.setLatitude(coords.lat);
-        c.setLongitude(coords.lng);
-    }
+    
     
     public void inscrireClient(String civilite, String nom, String prenom, Date dateNaissance, String adresse, String numTel, String mail, String mdp) {
         JpaUtil.creerEntityManager();
@@ -68,6 +63,13 @@ public class Service {
         
         
         JpaUtil.fermerEntityManager();
+    }
+    
+    private void calculCoord(Client c) {
+        LatLng coords;
+        coords = getLatLng(c.getAdresse());
+        c.setLatitude(coords.lat);
+        c.setLongitude(coords.lng);
     }
     
     public void ajouterEmploye(Employe e){
@@ -106,18 +108,45 @@ public class Service {
         JpaUtil.fermerEntityManager();
         return pers;
     }
-    
-    private List<Employe> trouverDispoEmploye() {
-        PersonneDAO pdao = new PersonneDAO();
-        List<Employe> employesDispo;
-        Time heureDebut = java.sql.Time.valueOf(java.time.LocalTime.now());
+
+    public void ajouterIntervention(Client c, String description, String type, String... args) {
+        JpaUtil.creerEntityManager();
+        JpaUtil.ouvrirTransaction();
+        PersonneDAO pdao = new PersonneDAO();;
+        InterventionDAO idao =  new InterventionDAO();
+        Employe plusProche = null;
         try {
-            employesDispo = pdao.trouveDispoEmploye(heureDebut);
+            List<Employe> employesDispo = trouverDispoEmploye();
+            if(employesDispo.isEmpty()){
+                envoyerNotification(c.getNumTel(),"Votre demande d'intervention a été rejetée : Aucun employé n'est disponible actuellement. Veuillez réessayez ultérieurement.");
+            } else {
+                plusProche = trouverPlusProcheEmploye(employesDispo,c);
+                pdao.lock(plusProche);
+                Intervention inter = null;
+                switch(type){
+                case "Incident" : 
+                    inter = new Incident(description,c,plusProche);
+                    break;
+                case "Animal" :
+                    inter = new Animal(args[0],description,c,plusProche);
+                    break;
+                case "Livraison" : 
+                    inter = new Livraison(args[0],args[1],description,c,plusProche);
+                    break;
+                }
+                c.addIntervention(inter);
+                plusProche.setIntervention(inter);
+                plusProche.setEstDispo(Boolean.FALSE);
+                idao.ajouteIntervention(inter);
+                envoyerNotification(plusProche.getNumTel(),"Bonjour " + plusProche.getPrenom() + ", Intervention " + type + " demandée le " + inter.getHeureDebut() + " pour " + c.getPrenom() + " "
+                    + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
+            }
+            JpaUtil.validerTransaction();
         } catch (RollbackException ex){
             log(ex.getMessage());
-            employesDispo = null;
+            JpaUtil.annulerTransaction();
         }
-        return employesDispo;
+        JpaUtil.fermerEntityManager();
     }
     
     private Employe trouverPlusProcheEmploye(List<Employe> employesDispo, Client c) {
@@ -135,42 +164,17 @@ public class Service {
         return plusProcheEmploye;
     }
     
-    public void ajouterIntervention(Client c, String description, String type, String... args) {
-        JpaUtil.creerEntityManager();
-        JpaUtil.ouvrirTransaction();
+    private List<Employe> trouverDispoEmploye() {
+        PersonneDAO pdao = new PersonneDAO();
+        List<Employe> employesDispo;
+        Time heureDebut = java.sql.Time.valueOf(java.time.LocalTime.now());
         try {
-            List<Employe> employesDispo = trouverDispoEmploye();
-            if(employesDispo.isEmpty()){
-                envoyerNotification(c.getNumTel(),"Votre demande d'intervention a été rejetée : Aucun employé n'est disponible actuellement. Veuillez réessayez ultérieurement.");
-            } else {
-                Employe plusProche = trouverPlusProcheEmploye(employesDispo,c);
-                InterventionDAO idao = new InterventionDAO();
-                PersonneDAO pdao = new PersonneDAO();
-                Intervention inter = null;
-                switch(type){
-                case "Incident" : 
-                    inter = new Incident(description,c,plusProche);
-                    break;
-                case "Animal" :
-                    inter = new Animal(args[0],description,c,plusProche);
-                    break;
-                case "Livraison" : 
-                    inter = new Livraison(args[0],args[1],description,c,plusProche);
-                    break;
-                }
-                c.addIntervention(inter);
-                plusProche.setIntervention(inter);
-                plusProche.setEstDispo(Boolean.FALSE);
-                idao.ajouteIntervention(inter);
-                envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + inter.getHeureDebut() + " pour " + c.getPrenom() + " "
-                    + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
-            }
-            JpaUtil.validerTransaction();
+            employesDispo = pdao.trouveDispoEmploye(heureDebut);
         } catch (RollbackException ex){
             log(ex.getMessage());
-            JpaUtil.annulerTransaction();
+            employesDispo = null;
         }
-        JpaUtil.fermerEntityManager();
+        return employesDispo;
     }
     
     public void cloturerIntervention(Employe e,String statut, String commentaire, Date date){
@@ -234,6 +238,7 @@ public class Service {
             log(ex.getMessage());
             JpaUtil.annulerTransaction();
         }
+        JpaUtil.fermerEntityManager();
         return i;
     }
     
@@ -265,7 +270,7 @@ public class Service {
             log(e.getMessage());
             JpaUtil.annulerTransaction();
         }
-        
+        JpaUtil.fermerEntityManager();
         return historique;
     } 
     
