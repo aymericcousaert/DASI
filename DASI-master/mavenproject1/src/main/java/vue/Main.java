@@ -51,13 +51,14 @@ public class Main {
         s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
         s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
         //log(Jacques.getIntervention().getCommentaire());
+        
+        Jacques = (Employe)s.updatePersonne(Jacques);
         s.cloturerIntervention(Jacques,"succes","c t dur",d);
         List<Intervention> aAfficher = s.rechercheInterventions(Jacques ,10, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE);
         for (int i = 0; i < aAfficher.size(); i++) {
             log(aAfficher.get(i).getDescription());
         }
         
-        Jacques = (Employe)s.updatePersonne(Jacques);
         s.cloturerIntervention(Jacques,"succes","c t dur",d);
         log("Commentaire : "+ s.historiqueClient(Paul).get(0).getCommentaire());
     }
