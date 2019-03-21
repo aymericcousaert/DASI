@@ -22,6 +22,7 @@ import metier.modele.Intervention;
 import metier.modele.Livraison;
 import metier.modele.Personne;
 import static util.DebugLogger.log;
+import static util.GeoTest.getFlightDistanceInKm;
 import static util.GeoTest.getLatLng;
 import static util.GeoTest.getTripDurationOrDistance;
 import static util.GeoTest.getTripDurationByBicycleInMinute;
@@ -34,7 +35,7 @@ import static util.Message.envoyerNotification;
  */
 public class Service {
     
-    public void calculCoord(Client c) {
+    private void calculCoord(Client c) {
         LatLng coords;
         coords = getLatLng(c.getAdresse());
         c.setLatitude(coords.lat);
@@ -60,7 +61,7 @@ public class Service {
             }
             envoyerMail("contact@proact.if", p.getMail(), "Bienvenue chez PROACT'IF", "Bonjour " + p.getPrenom() + ", nous vous confirmons votre inscription au service PROACT'IF. Votre numéro est : " + p.getId() + "."); 
         } else {
-            envoyerMail("contact@proact.if", p.getMail(), "Bienvenue chez PROACT'IF", "Bonjour " + p.getPrenom() + ", Votre inscription a échouée. L'adresse e-mail est déja enregistrée! ");
+            envoyerMail("contact@proact.if", p.getMail(), "Bienvenue chez PROACT'IF", "Bonjour " + p.getPrenom() + ", Votre inscription a échoué. L'adresse e-mail renseignée est déjà enregistrée. ");
         }
         
         
@@ -156,6 +157,7 @@ public class Service {
                     break;
                 }
                 plusProche.setIntervention(inter);
+                plusProche.setPrenom("test");
                 idao.ajouteIntervention(inter);
                 envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + inter.getHeureDebut() + " pour " + c.getPrenom() + " "
                     + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
@@ -171,11 +173,35 @@ public class Service {
     public void cloturerIntervention(Employe e,String statut, String commentaire, Date date){
         JpaUtil.creerEntityManager();
         JpaUtil.ouvrirTransaction();
-        /*e.setPrenom("test");
-        PersonneDAO pdao = new PersonneDAO();
+        System.out.println(e.getPrenom());
+        /*PersonneDAO pdao = new PersonneDAO();
         pdao.mergePersonne(e);*/
         JpaUtil.validerTransaction();
         JpaUtil.fermerEntityManager();
+    }
+    
+    public List<Intervention> rechercheInterventions(Employe e, Integer km, Boolean Animal, Boolean Incident, Boolean Livraison, Boolean mesInterventions) {
+        JpaUtil.creerEntityManager();
+        JpaUtil.ouvrirTransaction();
+        InterventionDAO idao = new InterventionDAO();
+        List<Intervention> InterRecherchees;
+        try {
+            InterRecherchees = idao.rechercheInterventions(e, km, Animal, Incident, Livraison, mesInterventions);
+            for( int i = 0; i < InterRecherchees.size(); i++){
+            double distance = getFlightDistanceInKm(getLatLng(e.getAdresse()), getLatLng(InterRecherchees.get(i).getClient().getAdresse()));
+            if (distance > km) {
+                InterRecherchees.remove(i);
+            }}
+            JpaUtil.validerTransaction();
+        } catch (RollbackException ex){
+            log(ex.getMessage());
+            InterRecherchees = null;
+            JpaUtil.annulerTransaction();
+        }
+        
+        JpaUtil.fermerEntityManager();
+        return InterRecherchees;
+        
     }
     
     

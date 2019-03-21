@@ -8,6 +8,7 @@ package metier.modele;
 import java.io.Serializable;
 import java.sql.Time;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -28,6 +29,8 @@ import javax.persistence.TemporalType;
 @Inheritance (strategy = InheritanceType.JOINED)
 public class Intervention implements Serializable {
 
+    @Column(insertable = false, updatable = false) 
+    private String myDType; 
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

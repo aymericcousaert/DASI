@@ -10,8 +10,10 @@ import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import metier.modele.Client;
 import metier.modele.Employe;
+import metier.modele.Intervention;
 import metier.service.Service;
 import static util.DebugLogger.log;
 
@@ -45,8 +47,16 @@ public class Main {
         Client Paul = (Client) s.connecterPersonne("paul.toutcourt@gmail.com", "azerty");
         //log(s.trouverPlusProcheEmploye(s.trouverDispoEmploye(),Paul).getPrenom());
         s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
+        s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
+        s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
         //log(Jacques.getIntervention().getCommentaire());
-        //s.cloturerIntervention(Jacques,"succes","c t dur",d);
+        s.cloturerIntervention(Jacques,"succes","c t dur",d);
+        List<Intervention> aAfficher = s.rechercheInterventions(Jacques ,10, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE);
+        for (int i = 0; i < aAfficher.size(); i++) {
+            log(aAfficher.get(i).getDescription());
+        }
+        
+        
         
     }
 
