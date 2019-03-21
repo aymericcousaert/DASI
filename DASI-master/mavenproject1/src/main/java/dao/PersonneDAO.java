@@ -29,6 +29,7 @@ public class PersonneDAO {
         
     }
     
+    
     public Personne mergePersonne(Personne p){
         EntityManager em = JpaUtil.obtenirEntityManager();
         Personne newP;
@@ -56,6 +57,18 @@ public class PersonneDAO {
         }
         return existePas;
         
+    }
+    
+    
+    public Personne finder(Personne p){
+        EntityManager em = JpaUtil.obtenirEntityManager();
+        Personne newP = p;
+        try {
+            newP = em.find(Personne.class, p.getId());
+        } catch (Exception e) {
+            log(e.getMessage());
+        }
+        return newP;
     }
     
     public Personne connectePersonne(String mail, String mdp) {
@@ -93,5 +106,6 @@ public class PersonneDAO {
         }
         return employesDispo;
     }
+    
     
 }

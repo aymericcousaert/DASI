@@ -51,5 +51,8 @@ public class Client extends Personne implements Serializable {
         this.latitude = latitude;
     }
 
+    public void addIntervention(Intervention i){
+        mesInterventions.add(i);
+    }
     
 }

@@ -11,8 +11,10 @@ import dao.InterventionDAO;
 import dao.JpaUtil;
 import dao.PersonneDAO;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 import javax.persistence.RollbackException;
 import metier.modele.Animal;
 import metier.modele.Client;
@@ -143,6 +145,7 @@ public class Service {
             } else {
                 Employe plusProche = trouverPlusProcheEmploye(employesDispo,c);
                 InterventionDAO idao = new InterventionDAO();
+                PersonneDAO pdao = new PersonneDAO();
                 Intervention inter = null;
                 switch(type){
                 case "Incident" : 
@@ -156,14 +159,18 @@ public class Service {
                     break;
                 }
                 plusProche.setIntervention(inter);
+                c.addIntervention(inter);
+                plusProche.setPrenom("test");
+                c = (Client)pdao.mergePersonne(c);
+                plusProche = (Employe)pdao.mergePersonne(plusProche);
                 idao.ajouteIntervention(inter);
                 envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + inter.getHeureDebut() + " pour " + c.getPrenom() + " "
                     + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
             }
             JpaUtil.validerTransaction();
         } catch (RollbackException ex){
-                log(ex.getMessage());
-                JpaUtil.annulerTransaction();
+            log(ex.getMessage());
+            JpaUtil.annulerTransaction();
         }
         JpaUtil.fermerEntityManager();
     }
@@ -171,12 +178,47 @@ public class Service {
     public void cloturerIntervention(Employe e,String statut, String commentaire, Date date){
         JpaUtil.creerEntityManager();
         JpaUtil.ouvrirTransaction();
-        /*e.setPrenom("test");
-        PersonneDAO pdao = new PersonneDAO();
-        pdao.mergePersonne(e);*/
+        InterventionDAO idao = new InterventionDAO();
+        Intervention inter = e.getIntervention();
+        inter.setCommentaire(commentaire);
+        inter.setStatut(statut);
+        inter.setHeureFin(date);
+        inter = (Intervention) idao.mergeIntervention(inter);
         JpaUtil.validerTransaction();
         JpaUtil.fermerEntityManager();
     }
+    
+    public Personne updatePersonne(Personne p){
+        PersonneDAO pdao = new PersonneDAO();
+        JpaUtil.creerEntityManager();
+        JpaUtil.ouvrirTransaction();
+        Personne newP = p;
+        try{
+            newP = pdao.finder(p);
+            JpaUtil.validerTransaction();
+        } catch (RollbackException e) {
+            log(e.getMessage());
+            JpaUtil.annulerTransaction();
+        }
+        JpaUtil.fermerEntityManager();
+        return newP;
+    }
+    
+    public Vector<Intervention> historiqueClient(Client c){
+        JpaUtil.creerEntityManager();
+        JpaUtil.ouvrirTransaction();
+        Vector<Intervention> historique = new Vector<Intervention>();
+        InterventionDAO idao = new InterventionDAO();
+        try{
+            historique = idao.historiqueClient(c);
+            JpaUtil.validerTransaction();
+        } catch (RollbackException e){
+            log(e.getMessage());
+            JpaUtil.annulerTransaction();
+        }
+        
+        return historique;
+    } 
     
     
     

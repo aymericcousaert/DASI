@@ -6,6 +6,7 @@
 package vue;
 
 import dao.JpaUtil;
+import dao.PersonneDAO;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,7 @@ import static util.DebugLogger.log;
  */
 public class Main {
     
-    public static void main (String args[]) throws ParseException{
+    public static void main (String args[]) throws ParseException, InterruptedException{
         
         JpaUtil.init();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -43,10 +44,10 @@ public class Main {
         //s.ajouterEmploye(Thomas);
         //s.ajouterEmploye(Théo);
         Client Paul = (Client) s.connecterPersonne("paul.toutcourt@gmail.com", "azerty");
-        //log(s.trouverPlusProcheEmploye(s.trouverDispoEmploye(),Paul).getPrenom());
         s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
-        //log(Jacques.getIntervention().getCommentaire());
-        //s.cloturerIntervention(Jacques,"succes","c t dur",d);
+        Jacques = (Employe)s.updatePersonne(Jacques);
+        s.cloturerIntervention(Jacques,"succes","c t dur",d);
+        log("Commentaire : "+ s.historiqueClient(Paul).get(0).getCommentaire());
         
     }
 
