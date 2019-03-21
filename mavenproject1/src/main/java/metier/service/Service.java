@@ -135,13 +135,13 @@ public class Service {
         return plusProcheEmploye;
     }
     
-    public void ajouterIntervention(Client c, String description, String type, String nom) {
+    public void ajouterIntervention(Client c, String description, String type, String... args) {
         JpaUtil.creerEntityManager();
         JpaUtil.ouvrirTransaction();
         try {
             List<Employe> employesDispo = trouverDispoEmploye();
             if(employesDispo.isEmpty()){
-                System.out.println("Intervention rejetée : Aucun employé disponible");
+                envoyerNotification(c.getNumTel(),"Votre demande d'intervention a été rejetée : Aucun employé n'est disponible actuellement. Veuillez réessayez ultérieurement.");
             } else {
                 Employe plusProche = trouverPlusProcheEmploye(employesDispo,c);
                 InterventionDAO idao = new InterventionDAO();
@@ -149,21 +149,18 @@ public class Service {
                 Intervention inter = null;
                 switch(type){
                 case "Incident" : 
-                    inter = new Incident(nom,description,c,plusProche);
+                    inter = new Incident(description,c,plusProche);
                     break;
                 case "Animal" :
-                    inter = new Animal(nom,description,c,plusProche);
+                    inter = new Animal(args[0],description,c,plusProche);
                     break;
                 case "Livraison" : 
-                    inter = new Livraison(nom,description,c,plusProche);
+                    inter = new Livraison(args[0],args[1],description,c,plusProche);
                     break;
                 }
-                plusProche.setIntervention(inter);
-                plusProche.setPrenom("test");
                 c.addIntervention(inter);
-                plusProche.setPrenom("test");
-                c = (Client)pdao.mergePersonne(c);
-                plusProche = (Employe)pdao.mergePersonne(plusProche);
+                plusProche.setIntervention(inter);
+                plusProche.setEstDispo(Boolean.FALSE);
                 idao.ajouteIntervention(inter);
                 envoyerNotification(plusProche.getNumTel(),"Intervention " + type + " demandée le " + inter.getHeureDebut() + " pour " + c.getPrenom() + " "
                     + c.getNom() + ", " + c.getAdresse() + ". \"" + description + "\". Trajet : " + getTripDurationByBicycleInMinute(getLatLng(plusProche.getAdresse()),getLatLng(c.getAdresse()))+ " min en vélo");
@@ -179,13 +176,25 @@ public class Service {
     public void cloturerIntervention(Employe e,String statut, String commentaire, Date date){
         JpaUtil.creerEntityManager();
         JpaUtil.ouvrirTransaction();
-        InterventionDAO idao = new InterventionDAO();
-        Intervention inter = e.getIntervention();
-        inter.setCommentaire(commentaire);
-        inter.setStatut(statut);
-        inter.setHeureFin(date);
-        inter = (Intervention) idao.mergeIntervention(inter);
-        JpaUtil.validerTransaction();
+        try{
+            InterventionDAO idao = new InterventionDAO();
+            PersonneDAO pdao = new PersonneDAO();
+            Intervention inter = e.getIntervention();
+            inter.setCommentaire(commentaire);
+            inter.setStatut(statut);
+            inter.setHeureFin(date);
+            e.setEstDispo(Boolean.TRUE);
+            e.setIntervention(null);
+            e = (Employe) pdao.mergePersonne(e);
+            inter = (Intervention) idao.mergeIntervention(inter);
+            envoyerNotification(inter.getClient().getNumTel(),"Votre demande d'intervention du " + inter.getHeureDebut() + " a été cloturée à  " 
+                + inter.getHeureFin() + ". Résultat : " + inter.getStatut() + ". "
+                + inter.getCommentaire() + ". Cordialement, " + e.getPrenom() + "." );
+            JpaUtil.validerTransaction();
+        } catch (RollbackException ex){
+            log(ex.getMessage());
+            JpaUtil.annulerTransaction();
+        }
         JpaUtil.fermerEntityManager();
     }
     
@@ -211,6 +220,21 @@ public class Service {
         JpaUtil.fermerEntityManager();
         return InterRecherchees;
         
+    }
+    
+    public Intervention findIntervention(Employe e){
+        JpaUtil.creerEntityManager();
+        JpaUtil.ouvrirTransaction();
+        InterventionDAO idao = new InterventionDAO();
+        Intervention i = null;
+        try{
+            i = idao.finder(e);
+            JpaUtil.validerTransaction();
+        } catch (RollbackException ex){
+            log(ex.getMessage());
+            JpaUtil.annulerTransaction();
+        }
+        return i;
     }
     
     public Personne updatePersonne(Personne p){

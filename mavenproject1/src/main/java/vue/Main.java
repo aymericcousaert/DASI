@@ -6,17 +6,16 @@
 package vue;
 
 import dao.JpaUtil;
-import dao.PersonneDAO;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import metier.modele.Animal;
 import metier.modele.Client;
 import metier.modele.Employe;
+import metier.modele.Incident;
 import metier.modele.Intervention;
+import metier.modele.Livraison;
 import metier.service.Service;
-import static util.DebugLogger.log;
 
 /**
  *
@@ -26,37 +25,69 @@ public class Main {
     
     public static void main (String args[]) throws ParseException, InterruptedException{
         
-        JpaUtil.init();
+        //Format date
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        Date d = sdf.parse("21/12/2012");
-        //Client Paul = new Client("M", "Toutcourt", "Paul",d , "7 Avenue Jean Capelle Ouest, Villeurbanne", "0652573263", "paul.toutcourt@gmail.com","azerty");
-        //Client Pierre = new Client("M", "Toutcourt", "Pierre",d , "7 Avenue Jean Capelle Ouest, Villeurbanne", "0652573263", "paul.toutcourt@gmail.com","azerty");
         
-        Employe Jacques = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Bress","A",d, "50 rue professeur Florence, Lyon","0606060606","stephane.bress@msn.fr","azerty");
-        //Employe Jilles = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Bress","B",d, "50 rue de Rivoli, Paris","0606060606","stephaazerne.bress@msn.fr","azerty");
-        //Employe Thomas = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Bress","C",d, "50 rue des tuiliers, Lyon","0606060606","sazerne.bress@msn.fr","azerty");
-        //Employe Théo = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Bress","D",d, "9 rue du Puits vieux, Saint-Priest","0606060606","azerty.bress@msn.fr","azerty");
-
-        //afficherClient(Paul);
+        JpaUtil.init();
         Service s = new Service();
-        s.inscrireClient("M", "Toutcourt", "Paul",d , "7 Avenue Jean Capelle Ouest, Villeurbanne", "0652573263", "paul.toutcourt@gmail.com","azerty");
-        s.inscrireClient("M", "Toutcourt", "Pierre",d , "7 Avenue Jean Capelle Ouest, Villeurbanne", "0652573263", "paul.toutcourt@gmail.com","azerty");
-        s.ajouterEmploye(Jacques);
-        //s.ajouterEmploye(Jilles);
-        //s.ajouterEmploye(Thomas);
-        //s.ajouterEmploye(Théo);
-        Client Paul = (Client) s.connecterPersonne("paul.toutcourt@gmail.com", "azerty");
-        s.ajouterIntervention(Paul, "j'ai glissé chef", "Incident", "ouille");
-        //log(Jacques.getIntervention().getCommentaire());
         
-        Jacques = (Employe)s.updatePersonne(Jacques);
+        //CREATION DES EMPLOYES EN DUR
+        Employe e1 = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Brel","Jacques",sdf.parse("25/12/1993"), "10 rue des alouettes, Lyon","0664987456","jacques.brel@gmail.com","azerty");
+        Employe e2 = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Durand","Pierre",sdf.parse("15/05/1993"), "20 avenue Roger Salengro, Villeurbanne","0634978848","pierre.durand@orange.fr","azerty");
+        Employe e3 = new Employe(new Time(8,0,0),new Time(16,0,0),"M","Dubois","Paul",sdf.parse("14/07/1985"), "9 rue du Puits Vieux, Saint-Priest","0664684952","paul.dubois@insa-lyon.fr","azerty");
+        s.ajouterEmploye(e1);
+        s.ajouterEmploye(e2);
+        s.ajouterEmploye(e3);
+        
+        //INSCRIPTION DES CLIENTS
+        s.inscrireClient("M", "Toutcourt", "Paul",sdf.parse("21/12/1983") , "7 Avenue Jean Capelle Ouest, Villeurbanne", "0652573263", "paul.toutcourt@gmail.com","azerty");
+        s.inscrireClient("M", "Dupont", "Lionel",sdf.parse("03/12/1997") , "5 rue des tuiliers, Lyon", "0652563444", "lionel.dupont@gmail.com","azerty");
+        s.inscrireClient("M", "Berger", "Antoine",sdf.parse("25/02/1976") , "20 avenue Albert Einstein, Villeurbanne", "0664587915", "antoine.berger","azerty");
+        s.inscrireClient("M", "Saoule", "Sam",sdf.parse("23/03/1992") , "50 rue professeur florence, Lyon", "0664978541", "sam.saoule@gmail.com","azerty");
+        s.inscrireClient("M", "Crush", "Sarah",sdf.parse("29/09/1987") , "10 rue de Rivoli, Paris", "0631648521", "sarah.crush@gmail.com","azerty");
+       
+        //CONNEXION D'UN CLIENT
+        
+        Client Paul = (Client) s.connecterPersonne("paul.toutcourt@gmail.com", "azerty");
+        
+        //CONNEXION D'UN EMPLOYE
+        
+        Employe Pierre = (Employe) s.connecterPersonne("pierre.durand@orange.fr", "azerty");
+        
+        //AJOUT D'UNE INTERVENTION
+        
+        s.ajouterIntervention(Paul, "fuite d'eau signalée par le voisin du dessous", "Incident");
+        s.ajouterIntervention(Paul, "promener medor dans le jardin", "Animal", "Chien");
+        s.ajouterIntervention(Paul, "deposer le colis sur la table de la cuisine", "Livraison","colis","DHL");
+        s.ajouterIntervention(Paul, "J'ai laissé ma gazinière allumée", "Incident");
+        
+        //EMPLOYE CONSULTE SON INTERVENTION EN COURS
+        
+        System.out.println("\r\nVotre intervention en cours : "+ s.findIntervention(Pierre).getDescription() + "\r\n");
+        
+        //CLIENT CONSULTE L'HISTORIQUE DE SES INTERVENTIONS
+        
+        System.out.println("\r\nVoici l'historique de vos interventions : \r\n");
+        for(Intervention i : s.historiqueClient(Paul)){
+            String type = (i instanceof Incident)?"Incident ":"";
+            type = (i instanceof Animal)?"Animal ":type;
+            type = (i instanceof Livraison)?"Livraison ":type;
+            System.out.println("Intervention "+ type + "demandée le " + i.getHeureDebut() + ". " + i.getDescription() + ". Statut : "+ i.getStatut() + ". Commentaire : " + i.getCommentaire() + ".");
+        }
+        /*Jacques = (Employe)s.updatePersonne(Jacques);
         List<Intervention> aAfficher = s.rechercheInterventions(Jacques ,10, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE);
         for (int i = 0; i < aAfficher.size(); i++) {
             log(aAfficher.get(i).getDescription());
         }
+        */
+        /* 
+        //CLOTURER INTERVENTION
         
-        s.cloturerIntervention(Jacques,"succes","c t dur",d);
-        log("Commentaire : "+ s.historiqueClient(Paul).get(0).getCommentaire());
+        Pierre = (Employe)s.updatePersonne(Pierre);
+        s.cloturerIntervention(Pierre,"succes","Le robinet était mal fermé",new Date());
+         
+        
+        log("Commentaire : "+ s.historiqueClient(Paul).get(0).getCommentaire());*/
     }
 
 }   

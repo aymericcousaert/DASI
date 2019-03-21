@@ -32,8 +32,9 @@ public class Client extends Personne implements Serializable {
         super(civilite, nom, prenom, dateNaissance, adresse, numTel, mail, mdp);
     }
 
-    
-
+    public List<Intervention> getMesInterventions() {
+        return mesInterventions;
+    }
 
     public double getLongitude() {
         return longitude;

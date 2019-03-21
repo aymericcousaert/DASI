@@ -28,9 +28,6 @@ import javax.persistence.TemporalType;
 @Inheritance (strategy = InheritanceType.JOINED)
 public class Intervention implements Serializable {
 
-    @Column(insertable = false, updatable = false) 
-    private String myDType; 
-    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
