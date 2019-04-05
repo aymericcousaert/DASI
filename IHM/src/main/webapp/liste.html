@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Liste</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Liste des Personnes</h1>
+        <ul id="liste-personnes">
+            <li>M. Aymeric COUASERT(aymeric.cousaert@insa-lyon.fr)</li>
+            <li>M. Mathis GUILHIN(mathis.guilhin@insa-lyon.fr)</li>
+        </ul>
+        <a href="index.html">Retour à l'accueil</a>
+        <script>
+            function ajouter(Personne) {
+                $('#liste-personnes').append(
+                        "<li>" + Personne.civilite + " " + Personne.prenom + " " + Personne.nom + " " + Personne.mail + "</li>");
+            }
+            $(document).ready(function () {
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'consulter_liste_personnes'
+                    },
+                    dataType: 'json'
+                    }).done(function (data) {
+                    
+                    console.log(data); // Afficher dans la console JavaScript
+                    
+                    $('#liste-personnes').empty();
+                    var personnes = data.personnes;
+                    for (var i = 0; i < personnes.length; i++) {
+                        ajouter(personnes[i]);
+                    }
+                });
+            });
+        </script>
+
+    </body>
+</html>
