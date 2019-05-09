@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Inscription</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    </head>
+    <body>
+        <h1> POSIT'IF </h1>
+        <h3> Inscription </h3>
+        Civilité : <input type="text" id="champ-civilite" name="name"/> <br>
+        Nom : <input type="text" id="champ-nom" name="name"/> <br>
+        Prénom : <input type="text" id="champ-prenom" name="name"/> <br>
+        Date de naissance : <input type="text" id="champ-dateNaissance" name="name"/> <br>
+        Code Postal : <input type="text" id="champ-codePostal" name="name"/> <br>
+        Tel : <input type="text" id="champ-tel" name="name"/> <br>
+        Mail : <input type="text" id="champ-mail" name="name"/> <br>
+        Mot de passe : <input type="text" id="champ-mdp" name="name"/> <br>
+        <button id="bouton-inscription">Inscription</button>   
+        <div id ='message'> </div>
+        
+         <script>
+
+            function inscription() {
+                var champCivilite = $('#champ-civilite').val();
+                var champNom = $('#champ-nom').val();
+                var champPrenom = $('#champ-prenom').val();
+                var champDateNaissance = $('#champ-dateNaissance').val();
+                var champCodePostal = $('#champ-codePostal').val();
+                var champTel = $('#champ-tel').val();
+                var champMail = $('#champ-mail').val();
+                var champMotDePasse = $('#champ-mdp').val();
+
+                $('#message').html('Inscription en cours...');
+
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        action: 'inscription',
+                        civilite: champCivilite,
+                        nom: champNom,
+                        prenom: champPrenom,
+                        dateNaissance: champDateNaissance,
+                        codePostal: champCodePostal,
+                        tel: champTel,
+                        mail: champMail,
+                        mdp: champMotDePasse
+                    },
+                    dataType: 'json'
+                }).done(function (data) {
+                    messageErreur = "";
+                    if (!data.dateNaissanceFormat) {
+                        messageErreur += "Le format de la date de naissance est incorrect. ";
+                    }
+                    if (!data.codePostalFormat) {
+                        messageErreur += "Le format du code postal est incorrect. \n";
+                    }
+                    $('#message').html(messageErreur);
+                    if(data.dateNaissanceFormat && data.codePostalFormat){
+                        $('#message').html('Inscription réussie !');
+                    }
+                    
+                }).fail( function (error) { // Appel KO => erreur a gérer
+                    
+                    // Popup avec message d'erreur :
+                    alert('Erreur lors de l\'appel: HTTP Code ' + error.status + ' ~ ' + error.statusText + ' ~ ' + error.getResponseHeader('Content-Type'));
+                    // Message d'erreur dans la div #message :
+                    $('#message').html('Erreur lors de l\'appel: HTTP Code ' + error.status + ' ~ ' + error.statusText + ' ~ ' + error.getResponseHeader('Content-Type'));
+
+                });
+            }
+
+            $(document).ready(function () {
+                // ajout d'un "handler" sur le clic du bouton de connexion
+                $('#bouton-inscription').on('click', function () {
+                    // affichage pour debugage dans la console javascript du navigateur
+                    console.log('Click sur le bouton "Inscription"');
+                    // appel de la fonction connexion
+                    inscription();
+                });
+            });
+           
+            
+        </script>
+        
+    </body>
+    
+</html>

@@ -1,0 +1,7 @@
+Serialisation\Serialisation.class
+Serialisation\SerialisationConnexion.class
+Actions\ActionInscription.class
+Servlet\ActionServlet.class
+Actions\Action.class
+Serialisation\SerialisationInscription.class
+Actions\ActionConnexion.class

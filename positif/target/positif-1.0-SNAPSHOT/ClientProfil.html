@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>client</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    </head>
+    <body>
+        <button id="bouton-historique">Mon Historique</button>  
+        <button id="bouton-voyance">Nouvelle Voyance</button>  
+        <button id="bouton-deconnexion"> Déconnexion </button>  
+        <h1> Profil </h1> <br>
+        Civilité : <div id='civilite'> </div> <br>
+        Nom : <div id='nom'> </div> <br>
+        Prénom : <div id='prenom'> </div> <br>
+        Date de Naissance : <div id='dateNaissance'> </div> <br>
+        Adresse : <div id='adresse'> </div> <br>
+        Tel : <div id='tel'> </div> <br>
+        Mail : <div id='mail'> </div> <br>
+        
+        <h1> Astrologie  </h1> <br>
+        Signe astrologique : <div id='sgnAstro'> </div> <br>
+        Signe chinois : <div id='sgnChinois'> </div> <br>
+        Animal totem : <div id='aniTotem'> </div> <br>
+        Couleur porte-bonheur : <div id='couleurBonheur'> </div> <br>
+        
+        
+        <div id='message'> </div> <br>
+    </body>
+    
+    <script>
+
+            function remplirDonnees() {
+
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {
+                        action: 'afficherProfil'
+                    },
+                    dataType: 'json'
+                }).done(function (data) {
+                   $('#civilite').html(data.civilite);
+                   $('#nom').html(data.nom);
+                   $('#prenom').html(data.prenom);
+                   $('#dateNaissance').html(data.dateNaissance);
+                   $('#adresse').html(data.adresse);
+                   $('#tel').html(data.tel);
+                   $('#mail').html(data.mail);
+                   $('#sgnAstro').html(data.sgnAstro);
+                   $('#sgnChinois').html(data.sgnChinois);
+                   $('#aniTotem').html(data.aniTot);
+                   $('#couleurBonheur').html(data.couleurBonheur);
+                }).fail( function (error) { // Appel KO => erreur a gérer
+                    
+                    // Popup avec message d'erreur :
+                    alert('Erreur lors de l\'appel: HTTP Code ' + error.status + ' ~ ' + error.statusText + ' ~ ' + error.getResponseHeader('Content-Type'));
+                    // Message d'erreur dans la div #message :
+                    $('#message').html('Erreur lors de l\'appel: HTTP Code ' + error.status + ' ~ ' + error.statusText + ' ~ ' + error.getResponseHeader('Content-Type'));
+
+                });
+            }
+
+            $(document).ready(function () {
+                // ajout d'un "handler" sur le clic du bouton de connexion
+                $('#bouton-deconnexion').on('click', function () {
+                    // affichage pour debugage dans la console javascript du navigateur
+                    console.log('Clic sur le bouton "Déconnexion"');
+                    // appel de la fonction connexion
+                    window.location = "index.html";
+                });
+                $('#bouton-voyance').on('click', function () {
+                    // affichage pour debugage dans la console javascript du navigateur
+                    console.log('Clic sur le bouton "Nouvelle Voyance"');
+                });
+                $('#bouton-historique').on('click', function () {
+                    // affichage pour debugage dans la console javascript du navigateur
+                    console.log('Clic sur le bouton "Nouvelle Voyance"');
+                });
+                
+                remplirDonnees();
+            });
+           
+            
+        </script>
+        
+</html>
